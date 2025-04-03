@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Dokunmatik Dövüş Oyunu</title>
+    <style>
+        body { text-align: center; background-color: black; color: white; }
+        canvas { background-color: gray; display: block; margin: auto; }
+        .controls { margin-top: 10px; }
+        button { font-size: 20px; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="controls">
+        <button id="leftBtn">Sol</button>
+        <button id="rightBtn">Sağ</button>
+        <button id="attackBtn">Saldır</button>
+    </div><script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = 800;
+    canvas.height = 400;
+    
+    class Fighter {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.width = 50;
+            this.height = 100;
+            this.color = color;
+            this.speed = 5;
+            this.health = 5;
+            this.isAttacking = false;
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+        moveLeft() { this.x -= this.speed; }
+        moveRight() { this.x += this.speed; }
+        attack(opponent) {
+            if (!this.isAttacking) {
+                this.isAttacking = true;
+                if (this.x + this.width >= opponent.x && this.x <= opponent.x + opponent.width) {
+                    opponent.health -= 1;
+                }
+                setTimeout(() => (this.isAttacking = false), 500);
+            }
+        }
+    }
+    
+    const player1 = new Fighter(100, 300, 'blue');
+    const player2 = new Fighter(600, 300, 'red');
+    
+    let touchControls = { left: false, right: false, attack: false };
+    
+    document.getElementById('leftBtn').addEventListener('touchstart', () => touchControls.left = true);
+    document.getElementById('leftBtn').addEventListener('touchend', () => touchControls.left = false);
+    document.getElementById('rightBtn').addEventListener('touchstart', () => touchControls.right = true);
+    document.getElementById('rightBtn').addEventListener('touchend', () => touchControls.right = false);
+    document.getElementById('attackBtn').addEventListener('touchstart', () => touchControls.attack = true);
+    document.getElementById('attackBtn').addEventListener('touchend', () => touchControls.attack = false);
+    
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (touchControls.left) player1.moveLeft();
+        if (touchControls.right) player1.moveRight();
+        if (touchControls.attack) player1.attack(player2);
+        
+        player1.draw();
+        player2.draw();
+        
+        ctx.fillStyle = 'white';
+        ctx.fillText(`Oyuncu 1 Can: ${player1.health}`, 20, 20);
+        ctx.fillText(`Oyuncu 2 Can: ${player2.health}`, 650, 20);
+        
+        if (player1.health <= 0 || player2.health <= 0) {
+            ctx.fillStyle = 'red';
+            ctx.font = '30px Arial';
+            ctx.fillText('Oyun Bitti', 350, 200);
+            return;
+        }
+        
+        requestAnimationFrame(gameLoop);
+    }
+    
+    gameLoop();
+</script>
+
+</body>
+</html>
